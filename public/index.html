@@ -16,7 +16,6 @@
 
     .app { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
 
-    /* Header */
     .header { display: flex; align-items: center; gap: 12px; margin-bottom: 2rem; }
     .logo-mark {
       width: 36px; height: 36px; background: #12948A; border-radius: 8px;
@@ -26,22 +25,42 @@
     .logo-text { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
     .logo-sub { font-size: 12px; color: #666; margin-top: 1px; }
 
-    /* Keywords */
     .section { background: white; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
-    .section-label { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
-    .kw-list { display: flex; flex-wrap: wrap; gap: 6px; }
-    .kw-pill {
-      background: #e1f5ee; color: #0f6e56; font-size: 11px;
-      padding: 3px 10px; border-radius: 20px; border: 1px solid #9fe1cb;
-    }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .section-label { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+    .btn-reset { font-size: 11px; color: #aaa; background: none; border: none; cursor: pointer; padding: 0; }
+    .btn-reset:hover { color: #888; }
 
-    /* Search */
+    .kw-list { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .kw-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: #e1f5ee; color: #0f6e56; font-size: 11px;
+      padding: 3px 8px 3px 10px; border-radius: 20px; border: 1px solid #9fe1cb;
+    }
+    .kw-remove {
+      background: none; border: none; cursor: pointer; color: #5DCAA5;
+      font-size: 14px; line-height: 1; padding: 0; display: flex; align-items: center;
+    }
+    .kw-remove:hover { color: #A32D2D; }
+
+    .kw-add-form { display: inline-flex; align-items: center; gap: 6px; }
+    .kw-input {
+      height: 28px; padding: 0 10px; border: 1px dashed #9fe1cb; border-radius: 20px;
+      font-size: 11px; color: #0f6e56; background: #f5fdfb; outline: none; width: 140px;
+    }
+    .kw-input:focus { border-color: #12948A; background: white; }
+    .kw-input::placeholder { color: #9FE1CB; }
+    .btn-add-kw {
+      height: 28px; padding: 0 12px; background: #12948A; color: white;
+      border: none; border-radius: 20px; font-size: 11px; cursor: pointer;
+    }
+    .btn-add-kw:hover { background: #0f7d74; }
+
     .search-row { display: flex; gap: 10px; flex-wrap: wrap; }
     .search-row input {
       flex: 1; min-width: 160px; padding: 0 14px; height: 42px;
       border: 1px solid #ddd; border-radius: 8px; font-size: 14px;
-      background: white; color: #1a1a1a; outline: none;
-      transition: border-color 0.15s;
+      background: white; color: #1a1a1a; outline: none; transition: border-color 0.15s;
     }
     .search-row input:focus { border-color: #12948A; }
     .search-row input::placeholder { color: #aaa; }
@@ -53,7 +72,6 @@
     .btn-search:hover { background: #0f7d74; }
     .btn-search:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* Stats */
     .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1rem; }
     .stat-card { background: white; border-radius: 10px; padding: 1rem 1.25rem; }
     .stat-label { font-size: 11px; color: #888; margin-bottom: 4px; }
@@ -62,7 +80,6 @@
     .stat-value.red { color: #c0392b; }
     .stat-value.amber { color: #b7800a; }
 
-    /* Results */
     .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
     .results-title { font-size: 14px; font-weight: 600; }
     .btn-export {
@@ -71,7 +88,6 @@
     }
     .btn-export:hover { background: #f9f9f9; }
 
-    /* Table */
     .table-wrap { background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e8e8e8; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     thead th {
@@ -98,7 +114,6 @@
     .badge-med  { background: #fef4e0; color: #b7800a; }
     .badge-low  { background: #e8f5e9; color: #2e7d32; }
 
-    /* States */
     .empty { text-align: center; padding: 3rem 1.5rem; color: #aaa; font-size: 14px; background: white; border-radius: 12px; }
     .loading-wrap { background: white; border-radius: 12px; padding: 2.5rem; text-align: center; }
     .loading-text { font-size: 14px; color: #555; margin-bottom: 8px; }
@@ -129,20 +144,16 @@
   </div>
 
   <div class="section" style="margin-bottom:1rem;">
-    <div class="section-label">Keywords Claude scans for</div>
-    <div class="kw-list">
-      <span class="kw-pill">processing fees</span>
-      <span class="kw-pill">credit card fees</span>
-      <span class="kw-pill">surcharge</span>
-      <span class="kw-pill">POS system</span>
-      <span class="kw-pill">card reader</span>
-      <span class="kw-pill">terminal crash</span>
-      <span class="kw-pill">slow checkout</span>
-      <span class="kw-pill">cash only</span>
-      <span class="kw-pill">no Amex</span>
-      <span class="kw-pill">chargebacks</span>
-      <span class="kw-pill">equipment issues</span>
-      <span class="kw-pill">transaction fees</span>
+    <div class="section-header">
+      <div class="section-label">Keywords Claude scans for</div>
+      <button class="btn-reset" onclick="resetKeywords()">Reset to default</button>
+    </div>
+    <div class="kw-list" id="kwList"></div>
+    <div style="margin-top:10px;">
+      <div class="kw-add-form">
+        <input type="text" class="kw-input" id="kwInput" placeholder="Add a keyword..." onkeydown="if(event.key==='Enter')addKeyword()" maxlength="40" />
+        <button class="btn-add-kw" onclick="addKeyword()">Add</button>
+      </div>
     </div>
   </div>
 
@@ -175,15 +186,53 @@
 </div>
 
 <script>
+  const DEFAULT_KEYWORDS = [
+    'processing fees', 'credit card fees', 'surcharge', 'POS system',
+    'card reader', 'terminal crash', 'slow checkout', 'cash only',
+    'no Amex', 'chargebacks', 'equipment issues', 'transaction fees'
+  ];
+
+  let keywords = [...DEFAULT_KEYWORDS];
   let allResults = [];
+
+  function renderKeywords() {
+    const list = document.getElementById('kwList');
+    list.innerHTML = keywords.map((kw, i) => `
+      <span class="kw-pill">
+        ${kw}
+        <button class="kw-remove" onclick="removeKeyword(${i})" title="Remove">&#x2715;</button>
+      </span>
+    `).join('');
+  }
+
+  function addKeyword() {
+    const input = document.getElementById('kwInput');
+    const val = input.value.trim().toLowerCase();
+    if (!val) return;
+    if (keywords.includes(val)) { input.value = ''; return; }
+    keywords.push(val);
+    renderKeywords();
+    input.value = '';
+    input.focus();
+  }
+
+  function removeKeyword(i) {
+    keywords.splice(i, 1);
+    renderKeywords();
+  }
+
+  function resetKeywords() {
+    keywords = [...DEFAULT_KEYWORDS];
+    renderKeywords();
+  }
+
+  renderKeywords();
 
   async function runSearch() {
     const bizType = document.getElementById('bizType').value.trim();
     const location = document.getElementById('location').value.trim();
-    if (!bizType || !location) {
-      showError('Please enter both a business type and a location.');
-      return;
-    }
+    if (!bizType || !location) { showError('Please enter both a business type and a location.'); return; }
+    if (keywords.length === 0) { showError('Please add at least one keyword before searching.'); return; }
 
     hideError();
     setLoading('Searching Google Places for businesses...', 0, 1);
@@ -192,8 +241,7 @@
     allResults = [];
 
     const btn = document.getElementById('searchBtn');
-    btn.disabled = true;
-    btn.textContent = 'Searching...';
+    btn.disabled = true; btn.textContent = 'Searching...';
 
     let businesses = [];
     try {
@@ -206,18 +254,15 @@
       if (data.error) { showError(data.error); resetBtn(); return; }
       businesses = data.businesses || [];
     } catch (e) {
-      showError('Could not connect to server. Make sure the backend is running.');
-      resetBtn();
-      return;
+      showError('Could not connect to server.');
+      resetBtn(); return;
     }
 
     if (businesses.length === 0) {
-      document.getElementById('resultsContainer').innerHTML = '<div class="empty">No businesses found for that search. Try a different type or location.</div>';
-      resetBtn();
-      return;
+      document.getElementById('resultsContainer').innerHTML = '<div class="empty">No businesses found. Try a different type or location.</div>';
+      resetBtn(); return;
     }
 
-    // Analyze each business one by one, showing live progress
     const analyzed = [];
     for (let i = 0; i < businesses.length; i++) {
       const biz = businesses[i];
@@ -226,7 +271,7 @@
         const res = await fetch('/api/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ business: biz })
+          body: JSON.stringify({ business: biz, keywords })
         });
         const result = await res.json();
         analyzed.push({ ...biz, ...result });
@@ -253,7 +298,6 @@
   function renderResults(analyzed, bizType, location) {
     const flagged = analyzed.filter(b => b.flagged);
     const high = flagged.filter(b => b.priority === 'High');
-
     document.getElementById('statTotal').textContent = analyzed.length;
     document.getElementById('statFlagged').textContent = flagged.length;
     document.getElementById('statHigh').textContent = high.length;
@@ -317,17 +361,9 @@
     a.click();
   }
 
-  function showError(msg) {
-    const box = document.getElementById('errorBox');
-    box.textContent = msg;
-    box.style.display = 'block';
-  }
+  function showError(msg) { const b = document.getElementById('errorBox'); b.textContent = msg; b.style.display = 'block'; }
   function hideError() { document.getElementById('errorBox').style.display = 'none'; }
-  function resetBtn() {
-    const btn = document.getElementById('searchBtn');
-    btn.disabled = false;
-    btn.textContent = 'Analyze Reviews';
-  }
+  function resetBtn() { const b = document.getElementById('searchBtn'); b.disabled = false; b.textContent = 'Analyze Reviews'; }
 </script>
 </body>
 </html>
