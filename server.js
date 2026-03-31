@@ -86,6 +86,8 @@ app.post('/api/analyze', async (req, res) => {
     return res.json({ flagged: false, priority: 'None', painPoint: '', triggerQuote: '' });
   }
 
+  const { keywords = [] } = req.body;
+  const keywordList = keywords.length > 0 ? keywords.join(', ') : 'processing fees, credit card fees, surcharge, POS system, card reader, terminal crash, slow checkout, cash only, no Amex, chargebacks, equipment issues, transaction fees';
   const reviewText = business.reviews.map((r, i) => `Review ${i + 1}: "${r}"`).join('\n');
 
   try {
@@ -107,7 +109,7 @@ Business: ${business.name}
 Reviews:
 ${reviewText}
 
-Scan for: processing fees, credit card fees, surcharge, POS system problems, card reader issues, terminal crashes, slow checkout, cash only, no Amex, chargebacks, equipment issues, high transaction fees.
+Scan specifically for these keywords and concepts: ${keywordList}.
 
 Respond ONLY with valid JSON, no markdown:
 {"flagged":true or false,"priority":"High" or "Medium" or "Low" or "None","painPoint":"one sentence summary or empty string","triggerQuote":"exact short phrase under 15 words from a review that triggered the flag, or empty string"}
