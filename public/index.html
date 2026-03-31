@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Review Scraper</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f4f4f2;
+      color: #1a1a1a;
+      min-height: 100vh;
+    }
+
+    .app { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* Header */
+    .header { display: flex; align-items: center; gap: 12px; margin-bottom: 2rem; }
+    .logo-mark {
+      width: 36px; height: 36px; background: #12948A; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .logo-mark svg { width: 20px; height: 20px; fill: white; }
+    .logo-text { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+    .logo-sub { font-size: 12px; color: #666; margin-top: 1px; }
+
+    /* Keywords */
+    .section { background: white; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+    .section-label { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .kw-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .kw-pill {
+      background: #e1f5ee; color: #0f6e56; font-size: 11px;
+      padding: 3px 10px; border-radius: 20px; border: 1px solid #9fe1cb;
+    }
+
+    /* Search */
+    .search-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .search-row input {
+      flex: 1; min-width: 160px; padding: 0 14px; height: 42px;
+      border: 1px solid #ddd; border-radius: 8px; font-size: 14px;
+      background: white; color: #1a1a1a; outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-row input:focus { border-color: #12948A; }
+    .search-row input::placeholder { color: #aaa; }
+    .btn-search {
+      height: 42px; padding: 0 22px; background: #12948A; color: white;
+      border: none; border-radius: 8px; font-size: 14px; font-weight: 500;
+      cursor: pointer; white-space: nowrap; transition: background 0.15s;
+    }
+    .btn-search:hover { background: #0f7d74; }
+    .btn-search:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Stats */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1rem; }
+    .stat-card { background: white; border-radius: 10px; padding: 1rem 1.25rem; }
+    .stat-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+    .stat-value { font-size: 26px; font-weight: 600; }
+    .stat-value.teal { color: #12948A; }
+    .stat-value.red { color: #c0392b; }
+    .stat-value.amber { color: #b7800a; }
+
+    /* Results */
+    .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .results-title { font-size: 14px; font-weight: 600; }
+    .btn-export {
+      height: 34px; padding: 0 14px; background: white; border: 1px solid #ddd;
+      border-radius: 8px; font-size: 12px; color: #555; cursor: pointer;
+    }
+    .btn-export:hover { background: #f9f9f9; }
+
+    /* Table */
+    .table-wrap { background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e8e8e8; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      background: #f9f9f8; padding: 10px 14px; text-align: left;
+      font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase;
+      letter-spacing: 0.4px; border-bottom: 1px solid #efefef;
+    }
+    tbody tr { border-bottom: 1px solid #f0f0f0; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fafafa; }
+    tbody td { padding: 12px 14px; vertical-align: top; }
+    .biz-name { font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+    .biz-meta { font-size: 12px; color: #777; line-height: 1.6; }
+    .rating { font-size: 12px; color: #888; margin-top: 3px; }
+    .star { color: #e6a817; }
+    .pain { font-size: 12px; color: #333; line-height: 1.6; }
+    .trigger-quote {
+      font-size: 11px; font-style: italic; color: #0f6e56;
+      background: #e8f7f2; border-left: 3px solid #12948A;
+      padding: 5px 10px; border-radius: 0 6px 6px 0; line-height: 1.5;
+    }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 5px; font-size: 11px; font-weight: 600; }
+    .badge-high { background: #fde8e8; color: #c0392b; }
+    .badge-med  { background: #fef4e0; color: #b7800a; }
+    .badge-low  { background: #e8f5e9; color: #2e7d32; }
+
+    /* States */
+    .empty { text-align: center; padding: 3rem 1.5rem; color: #aaa; font-size: 14px; background: white; border-radius: 12px; }
+    .loading-wrap { background: white; border-radius: 12px; padding: 2.5rem; text-align: center; }
+    .loading-text { font-size: 14px; color: #555; margin-bottom: 8px; }
+    .progress-label { font-size: 12px; color: #aaa; }
+    .progress-bar-wrap { width: 100%; max-width: 320px; margin: 14px auto 0; height: 4px; background: #eee; border-radius: 4px; overflow: hidden; }
+    .progress-bar { height: 100%; background: #12948A; border-radius: 4px; transition: width 0.3s; }
+    .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid #ddd; border-top-color: #12948A; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-box { background: #fde8e8; border: 1px solid #f5c6c6; color: #c0392b; border-radius: 10px; padding: 1rem 1.25rem; font-size: 13px; margin-bottom: 1rem; }
+
+    @media (max-width: 640px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      table { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="logo-mark">
+      <svg viewBox="0 0 20 20"><path d="M10 2L3 6v8l7 4 7-4V6L10 2zm0 2.5L15 7l-5 2.8L5 7l5-2.5zM4.5 8.5l5 2.8v5.2L4.5 14V8.5zm6 8V11.3l5-2.8V14l-5 2.5z"/></svg>
+    </div>
+    <div>
+      <div class="logo-text">Review Scraper</div>
+      <div class="logo-sub">Payment pain point intelligence</div>
+    </div>
+  </div>
+
+  <div class="section" style="margin-bottom:1rem;">
+    <div class="section-label">Keywords Claude scans for</div>
+    <div class="kw-list">
+      <span class="kw-pill">processing fees</span>
+      <span class="kw-pill">credit card fees</span>
+      <span class="kw-pill">surcharge</span>
+      <span class="kw-pill">POS system</span>
+      <span class="kw-pill">card reader</span>
+      <span class="kw-pill">terminal crash</span>
+      <span class="kw-pill">slow checkout</span>
+      <span class="kw-pill">cash only</span>
+      <span class="kw-pill">no Amex</span>
+      <span class="kw-pill">chargebacks</span>
+      <span class="kw-pill">equipment issues</span>
+      <span class="kw-pill">transaction fees</span>
+    </div>
+  </div>
+
+  <div class="section" style="margin-bottom:1rem;">
+    <div class="search-row">
+      <input type="text" id="bizType" placeholder="Business type (e.g. pizza, restaurants, auto repair, salon)" />
+      <input type="text" id="location" placeholder="Location (e.g. Los Angeles, CA)" />
+      <button class="btn-search" id="searchBtn" onclick="runSearch()">Analyze Reviews</button>
+    </div>
+  </div>
+
+  <div id="errorBox" style="display:none;" class="error-box"></div>
+
+  <div class="stats-row" id="statsRow" style="display:none;">
+    <div class="stat-card"><div class="stat-label">Businesses scanned</div><div class="stat-value" id="statTotal">0</div></div>
+    <div class="stat-card"><div class="stat-label">Pain points flagged</div><div class="stat-value teal" id="statFlagged">0</div></div>
+    <div class="stat-card"><div class="stat-label">High priority leads</div><div class="stat-value red" id="statHigh">0</div></div>
+    <div class="stat-card"><div class="stat-label">Hit rate</div><div class="stat-value amber" id="statRate">0%</div></div>
+  </div>
+
+  <div id="resultsHeaderWrap" style="display:none;" class="results-header">
+    <div class="results-title" id="resultsTitle">Flagged leads</div>
+    <button class="btn-export" onclick="exportCSV()">Export CSV</button>
+  </div>
+
+  <div id="resultsContainer">
+    <div class="empty">Enter a business type and location above, then click Analyze Reviews.</div>
+  </div>
+
+</div>
+
+<script>
+  let allResults = [];
+
+  async function runSearch() {
+    const bizType = document.getElementById('bizType').value.trim();
+    const location = document.getElementById('location').value.trim();
+    if (!bizType || !location) {
+      showError('Please enter both a business type and a location.');
+      return;
+    }
+
+    hideError();
+    setLoading('Searching Google Places for businesses...', 0, 1);
+    document.getElementById('statsRow').style.display = 'none';
+    document.getElementById('resultsHeaderWrap').style.display = 'none';
+    allResults = [];
+
+    const btn = document.getElementById('searchBtn');
+    btn.disabled = true;
+    btn.textContent = 'Searching...';
+
+    let businesses = [];
+    try {
+      const res = await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bizType, location })
+      });
+      const data = await res.json();
+      if (data.error) { showError(data.error); resetBtn(); return; }
+      businesses = data.businesses || [];
+    } catch (e) {
+      showError('Could not connect to server. Make sure the backend is running.');
+      resetBtn();
+      return;
+    }
+
+    if (businesses.length === 0) {
+      document.getElementById('resultsContainer').innerHTML = '<div class="empty">No businesses found for that search. Try a different type or location.</div>';
+      resetBtn();
+      return;
+    }
+
+    // Analyze each business one by one, showing live progress
+    const analyzed = [];
+    for (let i = 0; i < businesses.length; i++) {
+      const biz = businesses[i];
+      setLoading(`Analyzing ${i + 1} of ${businesses.length}: ${biz.name}`, i + 1, businesses.length);
+      try {
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ business: biz })
+        });
+        const result = await res.json();
+        analyzed.push({ ...biz, ...result });
+      } catch (e) {
+        analyzed.push({ ...biz, flagged: false, priority: 'None', painPoint: '', triggerQuote: '' });
+      }
+    }
+
+    allResults = analyzed;
+    renderResults(analyzed, bizType, location);
+    resetBtn();
+  }
+
+  function setLoading(text, current, total) {
+    const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+    document.getElementById('resultsContainer').innerHTML = `
+      <div class="loading-wrap">
+        <div class="loading-text"><span class="spinner"></span>${text}</div>
+        <div class="progress-label">${current} of ${total} complete</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+      </div>`;
+  }
+
+  function renderResults(analyzed, bizType, location) {
+    const flagged = analyzed.filter(b => b.flagged);
+    const high = flagged.filter(b => b.priority === 'High');
+
+    document.getElementById('statTotal').textContent = analyzed.length;
+    document.getElementById('statFlagged').textContent = flagged.length;
+    document.getElementById('statHigh').textContent = high.length;
+    document.getElementById('statRate').textContent = Math.round((flagged.length / analyzed.length) * 100) + '%';
+    document.getElementById('statsRow').style.display = 'grid';
+
+    if (flagged.length === 0) {
+      document.getElementById('resultsContainer').innerHTML = '<div class="empty">No payment processing pain points detected in these reviews.</div>';
+      return;
+    }
+
+    document.getElementById('resultsHeaderWrap').style.display = 'flex';
+    document.getElementById('resultsTitle').textContent = `${flagged.length} flagged lead${flagged.length !== 1 ? 's' : ''} — "${bizType}" near ${location}`;
+
+    const order = { High: 0, Medium: 1, Low: 2 };
+    const sorted = [...flagged].sort((a, b) => (order[a.priority] ?? 3) - (order[b.priority] ?? 3));
+
+    const rows = sorted.map(b => {
+      const stars = '★'.repeat(Math.round(b.rating)) + '☆'.repeat(5 - Math.round(b.rating));
+      const bc = b.priority === 'High' ? 'badge-high' : b.priority === 'Medium' ? 'badge-med' : 'badge-low';
+      const quote = b.triggerQuote ? `<div class="trigger-quote">"${b.triggerQuote}"</div>` : '—';
+      return `<tr>
+        <td>
+          <div class="biz-name">${b.name}</div>
+          <div class="biz-meta">${b.phone}</div>
+          <div class="biz-meta">${b.address}</div>
+          <div class="rating"><span class="star">${stars}</span> ${b.rating}</div>
+        </td>
+        <td><div class="pain">${b.painPoint || '—'}</div></td>
+        <td>${quote}</td>
+        <td><span class="badge ${bc}">${b.priority}</span></td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('resultsContainer').innerHTML = `
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:25%">Business</th>
+              <th style="width:28%">Pain point</th>
+              <th style="width:33%">Triggered by</th>
+              <th style="width:14%">Priority</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  function exportCSV() {
+    const flagged = allResults.filter(b => b.flagged);
+    const header = 'Business Name,Phone,Address,Rating,Priority,Pain Point,Trigger Quote';
+    const rows = flagged.map(b =>
+      `"${b.name}","${b.phone}","${b.address}",${b.rating},"${b.priority}","${b.painPoint}","${b.triggerQuote}"`
+    );
+    const blob = new Blob([[header, ...rows].join('\n')], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'review-scraper-leads.csv';
+    a.click();
+  }
+
+  function showError(msg) {
+    const box = document.getElementById('errorBox');
+    box.textContent = msg;
+    box.style.display = 'block';
+  }
+  function hideError() { document.getElementById('errorBox').style.display = 'none'; }
+  function resetBtn() {
+    const btn = document.getElementById('searchBtn');
+    btn.disabled = false;
+    btn.textContent = 'Analyze Reviews';
+  }
+</script>
+</body>
+</html>
