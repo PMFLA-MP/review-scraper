@@ -3,12 +3,12 @@ const path = require('path');
 
 const app = express();
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 const GOOGLE_KEY = process.env.GOOGLE_PLACES_API_KEY;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
-// Search Google Places — returns up to 60 businesses with reviews
+// Search using Places API (New) — Text Search endpoint
 app.post('/api/search', async (req, res) => {
   const { bizType, location } = req.body;
 
@@ -23,41 +23,47 @@ app.post('/api/search', async (req, res) => {
 
   try {
     do {
-      const url = pageToken
-        ? `https://maps.googleapis.com/maps/api/place/textsearch/json?pagetoken=${pageToken}&key=${GOOGLE_KEY}`
-        : `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${GOOGLE_KEY}`;
+      const body = {
+        textQuery: query,
+        maxResultCount: 20,
+        languageCode: 'en'
+      };
 
-      const searchRes = await fetch(url);
-      const searchData = await searchRes.json();
-
-      if (searchData.status === 'ZERO_RESULTS') break;
-
-      if (searchData.status !== 'OK') {
-        return res.status(500).json({ error: `Google Places error: ${searchData.status}` });
+      if (pageToken) {
+        body.pageToken = pageToken;
       }
 
-      // Fetch details (including reviews) for each business in parallel
-      const detailPromises = (searchData.results || []).map(async (place) => {
-        const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_phone_number,formatted_address,rating,reviews&key=${GOOGLE_KEY}`;
-        const detailRes = await fetch(detailUrl);
-        const detailData = await detailRes.json();
-        const d = detailData.result || {};
-        return {
-          name: d.name || place.name,
-          phone: d.formatted_phone_number || 'N/A',
-          address: d.formatted_address || place.formatted_address || 'N/A',
-          rating: d.rating || place.rating || 0,
-          reviews: (d.reviews || []).map(r => r.text).filter(Boolean)
-        };
+      const searchRes = await fetch('https://places.googleapis.com/v1/places:searchText', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': GOOGLE_KEY,
+          'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.rating,places.reviews,nextPageToken'
+        },
+        body: JSON.stringify(body)
       });
 
-      const pageResults = await Promise.all(detailPromises);
-      businesses = businesses.concat(pageResults);
+      const searchData = await searchRes.json();
 
-      pageToken = searchData.next_page_token;
+      if (searchData.error) {
+        return res.status(500).json({ error: `Google Places error: ${searchData.error.message}` });
+      }
+
+      const places = searchData.places || [];
+
+      const mapped = places.map(place => ({
+        name: place.displayName?.text || 'Unknown',
+        phone: place.nationalPhoneNumber || 'N/A',
+        address: place.formattedAddress || 'N/A',
+        rating: place.rating || 0,
+        reviews: (place.reviews || []).map(r => r.text?.text || '').filter(Boolean)
+      }));
+
+      businesses = businesses.concat(mapped);
+      pageToken = searchData.nextPageToken || null;
       pages++;
 
-      // Google requires a short delay before next_page_token becomes valid
+      // Google requires a short delay before nextPageToken becomes valid
       if (pageToken && pages < 3) {
         await new Promise(r => setTimeout(r, 2000));
       }
@@ -68,7 +74,7 @@ app.post('/api/search', async (req, res) => {
 
   } catch (err) {
     console.error('Search error:', err);
-    res.status(500).json({ error: 'Failed to fetch businesses. Check your Google API key.' });
+    res.status(500).json({ error: 'Failed to fetch businesses. Check your Google API key and billing.' });
   }
 });
 
