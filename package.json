@@ -1,0 +1,15 @@
+{
+  "name": "review-scraper",
+  "version": "1.0.0",
+  "description": "Payment pain point intelligence tool for merchant services lead generation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
